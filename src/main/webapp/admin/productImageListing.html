@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ProductImage List</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #333;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #333;
+    color: white;
+}
+
+a {
+    color: #333;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #111;
+}
+
+img {
+    max-width: 100px;
+    height: auto;
+}
+    </style>
+</head>
+<body>
+<table width="80%" align="center">
+    <tr>
+        <th>IMAGE</th>
+        <th>alternative</th>
+        <th>Actions</th>
+    </tr>
+    <tbody id="productImagesList">
+    </tbody>
+</table>
+
+<script>
+    async function fetchEmployeeData() {
+        try {
+            const response = await fetch('http://localhost:8080/api/productImages/all');
+            if (!response.ok) {
+                throw new Error('Failed to retrieve employee data');
+            }
+
+            const data = await response.json();
+            console.log(data)
+            const productImagesList = document.getElementById('productImagesList');
+            data.forEach(productImages => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${productImages.alternative}</td>
+                        <td>  <img src=${productImages.path} /></td>
+                        <td>
+                            <a href="">Update</a>
+                            <a href="">Delete</a>
+                        </td>
+                    `;
+                productImagesList.appendChild(row);
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // Gọi hàm để lấy dữ liệu
+    fetchEmployeeData();
+</script>
+</body>
+</html>

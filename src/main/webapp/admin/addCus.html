@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Add Customer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #customerForm {
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        #customerForm label {
+            display: block;
+            margin-top: 20px;
+        }
+
+        #customerForm input[type="text"],
+        #customerForm input[type="email"],
+        #customerForm input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        #customerForm input[type="submit"] {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #customerForm input[type="submit"]:hover {
+            background-color: #111;
+        }
+    </style>
+</head>
+<body>
+<h1>Add Customer</h1>
+<form id="customerForm" method="POST">
+    <label for="cust_name">Name:</label>
+    <input type="text" id="cust_name" name="name" required><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required><br>
+
+    <label for="phone">Phone:</label>
+    <input type="tel" id="phone" name="phone" required><br>
+
+    <label for="address">Address:</label>
+    <input type="text" id="address" name="address" required><br>
+
+    <input type="submit" value="Add Customer">
+</form>
+
+<script>
+    document.getElementById('customerForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        let formData = new FormData(this);
+        let jsonData = {};
+
+        for (let [key, value] of formData.entries()) {
+            jsonData[key] = value;
+        }
+
+        fetch('api/customers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(jsonData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => console.log(data))
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('There was an error adding the customer. Please try again.');
+            });
+    });
+</script>
+</body>
+</html>

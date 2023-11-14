@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Product List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #111;
+        }
+
+        img {
+            max-width: 100px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<table width="80%" align="center">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>description</th>
+        <th>unit</th>
+        <th>manufacturer</th>
+        <th>status</th>
+        <th>Actions</th>
+    </tr>
+    <tbody id="productList">
+    </tbody>
+</table>
+
+<script>
+    // Gọi API để lấy danh sách khách hàng
+    fetch('http://localhost:8080/api/products/all')
+        .then(response => response.json())
+        .then(data => {
+            const productList = document.getElementById('productList');
+            data.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${product.product_id}</td>
+                        <td>${product.name}</td>
+                        <td>${product.description}</td>
+                        <td>${product.unit}</td>
+                        <td>${product.manufacturer}</td>
+                                                <td>${product.status}</td>
+
+                        <td>
+                            <a href="">Update</a>
+                            <a href="">Delete</a>
+                        </td>
+                    `;
+                productList.appendChild(row);
+            });
+        });
+</script>
+</body>
+</html>
