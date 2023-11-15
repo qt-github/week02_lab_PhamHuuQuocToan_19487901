@@ -4,9 +4,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import vn.edu.iuh.fit.backend.dto.ProductInfoDTO;
-import vn.edu.iuh.fit.backend.entities.Product;
 import vn.edu.iuh.fit.backend.services.ProductService;
-
+import vn.edu.iuh.fit.backend.entities.Product;
 
 import java.util.List;
 

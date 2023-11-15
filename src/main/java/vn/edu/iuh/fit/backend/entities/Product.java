@@ -2,9 +2,7 @@ package vn.edu.iuh.fit.backend.entities;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
 import vn.edu.iuh.fit.backend.enums.ProductStatus;
-
 
 import java.util.ArrayList;
 import java.util.List;
