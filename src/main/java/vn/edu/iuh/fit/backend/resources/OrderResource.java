@@ -7,6 +7,9 @@ import vn.edu.iuh.fit.backend.entities.Order;
 import vn.edu.iuh.fit.backend.services.OrderService;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Path("/orders")
@@ -64,5 +67,17 @@ public class OrderResource {
         if (!delete)
             return Response.status(Response.Status.NOT_FOUND).build();
         return Response.ok(id).build();
+    }
+    @GET
+    @Path("/statistics/{date}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOrderStatisticsByDate(@PathParam("date") String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate date = LocalDate.parse(dateString, formatter);
+        List<Object[]> statistics = orderService.getOrderStatisticsByDate(date);
+        if (statistics == null || statistics.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(statistics).build();
     }
 }

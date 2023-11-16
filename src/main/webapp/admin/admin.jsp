@@ -62,13 +62,21 @@
     <li>
         <a href="#">LIST</a>
         <ul class="submenu">
-            <li><a href="customerListing.html">List Customer</a></li>
-            <li><a href="EmployeeListing.html">List Employee</a></li>
-            <li><a href="productListing.html">List Product</a></li>
-            <li><a href="ordersListing.html">List Orders</a></li>
-            <li><a href="orderDetailsListing.html">List OrderDetails</a></li>
-            <li><a href="productImageListing.html">List ProductImage</a></li>
-            <li><a href="productPriceListing.html">List ProductPrice</a></li>
+            <li><a href="customer-manager/customerListing.html">List Customer</a></li>
+            <li><a href="employee-manager/EmployeeListing.html">List Employee</a></li>
+            <li><a href="product-manager/productListing.html">List Product</a></li>
+            <li><a href="order-manager/ordersListing.html">List Orders</a></li>
+            <li><a href="orderDetail-manager/orderDetailsListing.html">List OrderDetails</a></li>
+            <li><a href="product-manager/productImageListing.html">List ProductImage</a></li>
+            <li><a href="product-manager/productPriceListing.html">List ProductPrice</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#">STATIC</a>
+        <ul class="submenu">
+            <li><a href="statics/orderByDate.html">Order by day</a></li>
+            <li><a href="#">Order by time period</a></li>
+            <li><a href="#">Order by sales staff over a period of time</a></li>
         </ul>
     </li>
 </ul>

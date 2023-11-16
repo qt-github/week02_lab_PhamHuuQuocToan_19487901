@@ -2,46 +2,12 @@
 <html lang="en">
 <head>
     <title>Add Customer</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
+    <link rel="stylesheet" type="text/css" href="../css/add_form.css">
 
-        #customerForm {
-            width: 300px;
-            margin: 0 auto;
-        }
-
-        #customerForm label {
-            display: block;
-            margin-top: 20px;
-        }
-
-        #customerForm input[type="text"],
-        #customerForm input[type="email"],
-        #customerForm input[type="tel"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-        }
-
-        #customerForm input[type="submit"] {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        #customerForm input[type="submit"]:hover {
-            background-color: #111;
-        }
-    </style>
 </head>
 <body>
 <h1>Add Customer</h1>
-<form id="customerForm" method="POST">
+<form id="addForm" method="POST">
     <label for="cust_name">Name:</label>
     <input type="text" id="cust_name" name="name" required><br>
 
@@ -68,7 +34,7 @@
             jsonData[key] = value;
         }
 
-        fetch('api/customers', {
+        fetch('http://localhost:8080/api/customers', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -81,7 +47,11 @@
                 }
                 return response.json();
             })
-            .then(data => console.log(data))
+            .then(data => {
+                console.log('Success:', data);
+                alert("add Success")
+                window.location.href = 'customerListing.html';
+            })
             .catch((error) => {
                 console.error('Error:', error);
                 alert('There was an error adding the customer. Please try again.');

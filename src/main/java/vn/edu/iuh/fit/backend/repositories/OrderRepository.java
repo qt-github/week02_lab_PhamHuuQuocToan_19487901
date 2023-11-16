@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import vn.edu.iuh.fit.backend.entities.Order;
 
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,4 +83,23 @@ public class OrderRepository {
         }
         return null;
     }
+    public List<Object[]> getOrderStatisticsByDate(LocalDate date) {
+    try {
+        trans.begin();
+        List<Object[]> list = em.createNativeQuery(
+                        "SELECT YEAR(order_date) as year, MONTH(order_date) as month, DAY(order_date) as day, count(order_id) as count_order " +
+                                "FROM orders " +
+                                "WHERE YEAR(order_date) = ?1 AND MONTH(order_date) = ?2 AND DAY(order_date) = ?3 "
+                ).setParameter(1, date.getYear())
+                .setParameter(2, date.getMonthValue())
+                .setParameter(3, date.getDayOfMonth())
+                .getResultList();
+        trans.commit();
+        return list;
+    } catch (Exception e) {
+        logger.info(e.getMessage());
+        trans.rollback();
+    }
+    return null;
+}
 }

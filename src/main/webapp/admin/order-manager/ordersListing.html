@@ -2,48 +2,11 @@
 <html lang="en">
 <head>
     <title>Order List</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-        }
-
-        table, th, td {
-            border: 1px solid #333;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #333;
-            color: white;
-        }
-
-        a {
-            color: #333;
-            text-decoration: none;
-        }
-
-        a:hover {
-            color: #111;
-        }
-
-        img {
-            max-width: 100px;
-            height: auto;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="../css/list_page.css">
 </head>
 <body>
-<a href="createOrder.html">Add</a>
+<button id="addButton">Add Order</button>
+<button id="backToHome">Back to Home</button>
 <table width="80%" align="center">
     <tr>
         <th>ID</th>
@@ -84,6 +47,14 @@
 
     // Gọi hàm để lấy dữ liệu
     fetchEmployeeData();
+
+    document.getElementById('addButton').addEventListener('click', function() {
+    window.location.href = 'createOrder.html'; // Replace with your actual add new item page URL
+});
+
+document.getElementById('backToHome').addEventListener('click', function() {
+    window.location.href = '../admin.jsp'; // Replace with your actual home page URL
+});
 </script>
 </body>
 </html>
