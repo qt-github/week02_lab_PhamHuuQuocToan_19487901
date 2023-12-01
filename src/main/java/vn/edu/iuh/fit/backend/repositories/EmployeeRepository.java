@@ -50,12 +50,6 @@ public class EmployeeRepository {
         return executeTransactionWithResult(() -> em.createNativeQuery("Select * from employee group by emp_id ", Employee.class).getResultList());
     }
 
-    public List<Employee> getActiveEmployee() {
-        return executeTransactionWithResult(() -> em.createQuery("Select e from Employee e where e.status=:status", Employee.class)
-                .setParameter("status", EmployeeStatus.ACTIVE)
-                .getResultList());
-    }
-
     private boolean executeTransaction(Runnable action) {
         try {
             trans.begin();
@@ -69,6 +63,13 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Thực thi một giao dịch với hành động đã cho và trả về kết quả.
+     *
+     * @param <T> Kiểu của kết quả.
+     * @param action Hành động cần được thực thi trong giao dịch.
+     * @return Kết quả của hành động nếu giao dịch thành công.
+     */
     private <T> T executeTransactionWithResult(ResultSupplier<T> action) {
         try {
             trans.begin();

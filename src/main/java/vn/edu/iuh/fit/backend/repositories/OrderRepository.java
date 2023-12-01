@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@FunctionalInterface
+@FunctionalInterface //explain: https://www.geeksforgeeks.org/functional-interfaces-java/
 interface ResultSupplier<T> {
     T get() throws PersistenceException;
 }
@@ -57,6 +57,11 @@ public class OrderRepository {
         return executeTransactionWithResult(() -> em.createNativeQuery("SELECT * from orders ", Order.class).getResultList());
     }
 
+    /**
+     * Truy xuất thống kê đơn hàng được nhóm theo ngày từ cơ sở dữ liệu.
+     *
+     * @return Danh sách các mảng đối tượng, mỗi mảng chứa ngày đặt hàng, số lượng đơn hàng và tổng số tiền cho ngày đó.
+     */
     public List<Object[]> getOrderStatisticsByDate() {
         return executeTransactionWithResult(() -> {
             String queryString = "SELECT FUNCTION('DATE', o.orderDate) AS orderDay, COUNT(o) AS orderCount, SUM(od.price * od.quantity) AS totalAmount " +
@@ -67,6 +72,13 @@ public class OrderRepository {
         });
     }
 
+    /**
+     * Truy xuất thống kê đơn hàng được nhóm theo ngày trong một khoảng thời gian cụ thể từ cơ sở dữ liệu.
+     *
+     * @param startDate Ngày bắt đầu của khoảng thời gian.
+     * @param endDate Ngày kết thúc của khoảng thời gian.
+     * @return Danh sách các mảng đối tượng, mỗi mảng chứa ngày đặt hàng, số lượng đơn hàng và tổng số tiền cho ngày đó trong khoảng thời gian đã chỉ định.
+     */
     public List<Object[]> getOrderStatisticsByDateRange(LocalDate startDate, LocalDate endDate) {
         return executeTransactionWithResult(() -> em.createQuery(
                 "SELECT FUNCTION('DATE', o.orderDate) AS orderDay, COUNT(o) AS orderCount, SUM(od.price * od.quantity) AS totalAmount " +
@@ -77,6 +89,14 @@ public class OrderRepository {
         ).setParameter("startDate", startDate).setParameter("endDate", endDate).getResultList());
     }
 
+    /**
+     * Truy xuất thống kê đơn hàng được nhóm theo nhân viên và ngày trong một khoảng thời gian cụ thể từ cơ sở dữ liệu.
+     *
+     * @param employeeId ID của đối tượng Nhân viên để sử dụng cho việc tìm kiếm.
+     * @param startDate Ngày bắt đầu của khoảng thời gian.
+     * @param endDate Ngày kết thúc của khoảng thời gian.
+     * @return Danh sách các mảng đối tượng, mỗi mảng chứa tên nhân viên, số lượng đơn hàng và tổng số tiền cho nhân viên đó trong khoảng thời gian đã chỉ định.
+     */
     public List<Object[]> getOrderStatisticsByEmployeeAndDateRange(Long employeeId, LocalDate startDate, LocalDate endDate) {
         return executeTransactionWithResult(() -> em.createQuery(
                         "SELECT e.fullname AS employeeName, COUNT(o) AS orderCount, " +
@@ -94,6 +114,11 @@ public class OrderRepository {
                 .getResultList());
     }
 
+    /**
+     * Tìm kiếm thông tin về tất cả các đơn hàng từ cơ sở dữ liệu.
+     *
+     * @return Danh sách các đối tượng OrderDTO chứa thông tin về mỗi đơn hàng.
+     */
     public List<OrderDTO> getInfoOrder() {
         return executeTransactionWithResult(() -> {
             List<Order> list = em.createQuery("select distinct o from Order o join o.orderDetails od order by o.order_id asc ", Order.class)
@@ -120,6 +145,13 @@ public class OrderRepository {
         });
     }
 
+    /**
+     * Truy xuất một đối tượng Order từ cơ sở dữ liệu sử dụng các đối tượng Customer và Employee đã cho.
+     *
+     * @param customerId ID của đối tượng Customer để sử dụng cho việc tìm kiếm.
+     * @param employeeId ID của đối tượng Employee để sử dụng cho việc tìm kiếm.
+     * @return Một Optional chứa đối tượng Order nếu tìm thấy, hoặc một Optional trống nếu không tìm thấy.
+     */
     public Optional<Order> findOrderByCustomerAndEmployee(Long customerId, Long employeeId) {
         String queryString = "SELECT o FROM Order o WHERE o.customer.id = :customerId AND o.employee.id = :employeeId";
         TypedQuery<Order> query = em.createQuery(queryString, Order.class);

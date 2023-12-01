@@ -58,12 +58,12 @@ public class ProductRepository {
         return executeTransactionWithResult(() -> em.createQuery("Select p from Product p order by p.product_id asc", Product.class).getResultList());
     }
 
-    public List<Product> getActiveProduct() {
-        return executeTransactionWithResult(() -> em.createQuery("Select p from Product p where p.status=:status", Product.class)
-                .setParameter("status", ProductStatus.ACTIVE)
-                .getResultList());
-    }
 
+    /**
+     * Truy xuất thông tin về tất cả các sản phẩm đang hoạt động từ cơ sở dữ liệu.
+     *
+     * @return Danh sách các đối tượng ProductInfoDTO chứa thông tin về mỗi sản phẩm đang hoạt động.
+     */
     public List<ProductInfoDTO> getActiveProductInfo() {
         return executeTransactionWithResult(() -> {
             List<Product> list = em.createQuery("SELECT p FROM Product p JOIN FETCH p.productImageList ig JOIN FETCH p.productPrices pp WHERE p.status = :status order by pp.price_date_time desc ", Product.class)

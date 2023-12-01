@@ -62,6 +62,12 @@ public class ProductPriceRepository {
         return executeTransactionWithResult(() -> em.createQuery("SELECT c from ProductPrice c order by c.product.product_id ASC", ProductPrice.class).getResultList());
     }
 
+    /**
+     * Truy xuất giá mới nhất của một sản phẩm từ cơ sở dữ liệu bằng ID của sản phẩm.
+     *
+     * @param productId ID của sản phẩm.
+     * @return Giá mới nhất của sản phẩm, hoặc null nếu không tìm thấy giá nào.
+     */
     public Double findLatestProductPrice(long productId) {
         return executeTransactionWithResult(() -> {
             String jpql = "SELECT pp.price " +

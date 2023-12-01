@@ -24,28 +24,20 @@ public class OrderDetailsRepository {
         return executeTransaction(() -> em.persist(orderDetail));
     }
 
-    public boolean updateOrderDetail(OrderDetail orderDetail) {
-        return executeTransaction(() -> em.merge(orderDetail));
-    }
 
     public List<OrderDetail> findOrderDetail(long OrderID) {
-    return executeTransactionWithResult(() -> {
-        TypedQuery<OrderDetail> query = em.createQuery("select od from OrderDetail od where od.order.order_id =:OrderID", OrderDetail.class);
-        query.setParameter("OrderID", OrderID);
-        return query.getResultList();
-    });
-}
+        return executeTransactionWithResult(() -> {
+            TypedQuery<OrderDetail> query = em.createQuery("select od from OrderDetail od where od.order.order_id =:OrderID", OrderDetail.class);
+            query.setParameter("OrderID", OrderID);
+            return query.getResultList();
+        });
+    }
 
-    public boolean deleteOrderDetail(long OrderID  ) {
-    return executeTransaction(() -> {
-        List<OrderDetail> op = findOrderDetail(OrderID );
-        if (!op.isEmpty()) {
-            OrderDetail orderDetail = op.get(0);
-            em.remove(orderDetail);
-        }
-    });
-}
-
+    /**
+     * Truy xuất tất cả các thực thể OrderDetail từ cơ sở dữ liệu.
+     *
+     * @return Danh sách tất cả các thực thể OrderDetail trong cơ sở dữ liệu.
+     */
     public List<OrderDetail> getAllOrderDetails() {
         return executeTransactionWithResult(() -> {
             String query = "SELECT od.*, pp.price AS latest_price, od.product_id, od.order_id " +
@@ -61,6 +53,13 @@ public class OrderDetailsRepository {
         });
     }
 
+    /**
+     * Truy xuất một thực thể OrderDetail từ cơ sở dữ liệu sử dụng các thực thể Order và Product đã cho.
+     *
+     * @param order Thực thể Order để sử dụng cho việc tìm kiếm.
+     * @param product Thực thể Product để sử dụng cho việc tìm kiếm.
+     * @return Một Optional chứa thực thể OrderDetail nếu tìm thấy, hoặc một Optional trống nếu không tìm thấy.
+     */
     public Optional<OrderDetail> findOrderDetailByOrderAndProduct(Order order, Product product) {
         return executeTransactionWithResult(() -> {
             String queryString = "SELECT od FROM OrderDetail od WHERE od.order = :order AND od.product = :product";

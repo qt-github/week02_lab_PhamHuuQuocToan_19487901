@@ -40,26 +40,38 @@ public class CustomerRepository {
         }
     }
 
+    /**
+     * Xóa một thực thể Customer khỏi cơ sở dữ liệu bằng ID của nó.
+     *
+     * @param id ID của thực thể Customer cần xóa.
+     * @return true nếu thực thể Customer đã được xóa thành công, false nếu ngược lại.
+     */
     public boolean deleteCust(long id) {
-    Customer customer = getCustomerById(id);
-    if (customer != null) {
-        try {
-            executeTransaction(() -> {
-                // Delete or reassign all orders associated with the customer
-                for (Order order : customer.getOrderList()) {
-                    em.remove(order);
-                }
-                // Now we can safely delete the customer
-                em.remove(customer);
-            });
-            return true;
-        } catch (Exception ex) {
-            throw new RuntimeException("Transaction failed", ex);
+        Customer customer = getCustomerById(id);
+        if (customer != null) {
+            try {
+                executeTransaction(() -> {
+                    // Delete or reassign all orders associated with the customer
+                    for (Order order : customer.getOrderList()) {
+                        em.remove(order);
+                    }
+                    // Now we can safely delete the customer
+                    em.remove(customer);
+                });
+                return true;
+            } catch (Exception ex) {
+                throw new RuntimeException("Transaction failed", ex);
+            }
         }
+        return false;
     }
-    return false;
-}
 
+
+    /**
+     * Thực thi một giao dịch với hành động đã cho.
+     *
+     * @param action Hành động cần được thực thi trong giao dịch.
+     */
     private void executeTransaction(Runnable action) {
         try {
             trans.begin();

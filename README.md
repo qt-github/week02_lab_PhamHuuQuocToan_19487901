@@ -19,7 +19,7 @@
 Dự án bao gồm các tính năng sau:
 
 - Entities: `Product`, `Employee`, `Order`, `Customer`, `ProductImage`, `ProductPrice`, `OrderDetail`.
-- Converters: `ProductStatus` and `EmployeeStatus` enums.
+- Converters: Enums `ProductStatus` và `EmployeeStatus`.
 - A persistence unit named `lab_week_2`.
 
 ## Contributing
