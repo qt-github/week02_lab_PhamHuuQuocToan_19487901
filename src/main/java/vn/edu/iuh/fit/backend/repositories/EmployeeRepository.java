@@ -1,3 +1,4 @@
+// EmployeeRepository.java
 package vn.edu.iuh.fit.backend.repositories;
 
 import jakarta.persistence.*;
@@ -5,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.edu.iuh.fit.backend.entities.Employee;
 import vn.edu.iuh.fit.backend.enums.EmployeeStatus;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -15,36 +15,17 @@ public class EmployeeRepository {
     private final EntityTransaction trans;
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-
     public EmployeeRepository() {
         em = Persistence.createEntityManagerFactory("lab_week_2").createEntityManager();
         trans = em.getTransaction();
     }
 
     public boolean insertEmployee(Employee employee) {
-        try {
-            trans.begin();
-            em.persist(employee);
-            trans.commit();
-            return true;
-        } catch (Exception e) {
-            logger.info(e.getMessage());
-            trans.rollback();
-        }
-        return false;
+        return executeTransaction(() -> em.persist(employee));
     }
 
     public boolean updateEmployee(Employee employee) {
-        try {
-            trans.begin();
-            em.merge(employee);
-            trans.commit();
-            return true;
-        } catch (Exception e) {
-            logger.info(e.getMessage());
-            trans.rollback();
-        }
-        return false;
+        return executeTransaction(() -> em.merge(employee));
     }
 
     public Optional<Employee> findEmployee(long id) {
@@ -55,46 +36,49 @@ public class EmployeeRepository {
     }
 
     public boolean deleteEmployee(long id) {
-        try {
-            trans.begin();
+        return executeTransaction(() -> {
             Optional<Employee> op = findEmployee(id);
             Employee employee = op.orElse(null);
             if (employee != null) {
                 employee.setStatus(EmployeeStatus.DELETE);
                 em.merge(employee);
             }
+        });
+    }
+
+    public List<Employee> getAllEmployee() {
+        return executeTransactionWithResult(() -> em.createNativeQuery("Select * from employee group by emp_id ", Employee.class).getResultList());
+    }
+
+    public List<Employee> getActiveEmployee() {
+        return executeTransactionWithResult(() -> em.createQuery("Select e from Employee e where e.status=:status", Employee.class)
+                .setParameter("status", EmployeeStatus.ACTIVE)
+                .getResultList());
+    }
+
+    private boolean executeTransaction(Runnable action) {
+        try {
+            trans.begin();
+            action.run();
             trans.commit();
             return true;
-
         } catch (Exception e) {
             logger.info(e.getMessage());
             trans.rollback();
+            return false;
         }
-        return false;
     }
-    public List<Employee> getAllEmployee(){
+
+    private <T> T executeTransactionWithResult(ResultSupplier<T> action) {
         try {
             trans.begin();
-            List<Employee> list= em.createNativeQuery("Select * from employee order by full_name ", Employee.class).getResultList();
+            T result = action.get();
             trans.commit();
-            return list;
-        }catch (Exception e){
+            return result;
+        } catch (Exception e) {
             logger.info(e.getMessage());
             trans.rollback();
+            return null;
         }
-        return null;
-    }
-    public List<Employee> getActiveEmployee(){
-       try{
-            List<Employee> list=em.createQuery("Select e from Employee e where e.status=:status",Employee.class)
-                    .setParameter("status",EmployeeStatus.ACTIVE)
-                    .getResultList();
-            trans.commit();
-            return list;
-        }catch (Exception e){
-            logger.info(e.getMessage());
-            trans.rollback();
-        }
-        return null;
     }
 }

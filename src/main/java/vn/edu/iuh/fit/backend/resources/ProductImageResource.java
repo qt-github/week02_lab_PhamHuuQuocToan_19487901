@@ -6,15 +6,11 @@ import jakarta.ws.rs.core.Response;
 import vn.edu.iuh.fit.backend.entities.ProductImage;
 import vn.edu.iuh.fit.backend.services.ProductImageService;
 
-
 import java.util.List;
 
 @Path("/productImages")
 public class ProductImageResource {
-    private final ProductImageService productImageService= new ProductImageService();
-
-    public ProductImageResource() {
-    }
+    private final ProductImageService productImageService = new ProductImageService();
 
     @GET
     @Path("/all")
@@ -22,7 +18,7 @@ public class ProductImageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll() {
         List<ProductImage> list = productImageService.getAllProductImages();
-        return Response.ok(list).build();
+        return okResponse(list);
     }
 
     @GET
@@ -30,9 +26,7 @@ public class ProductImageResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findByID(@PathParam("id") long id) {
-        if (productImageService.findProductImage(id).isEmpty())
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(productImageService.findProductImage(id).get()).build();
+        return productImageService.findProductImage(id).map(this::okResponse).orElseGet(this::notFoundResponse);
     }
 
     @POST
@@ -40,7 +34,7 @@ public class ProductImageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response insert(ProductImage productImage) {
         productImageService.insertProductImage(productImage);
-        return Response.ok(productImage).build();
+        return okResponse(productImage);
     }
 
     @PUT
@@ -49,12 +43,13 @@ public class ProductImageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") long id, ProductImage productImage) {
         if (productImageService.findProductImage(id).isEmpty())
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFoundResponse();
         boolean update = productImageService.updateProductImage(productImage);
         if (!update)
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(productImage).build();
+            return notFoundResponse();
+        return okResponse(productImage);
     }
+
     @DELETE
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -62,7 +57,15 @@ public class ProductImageResource {
     public Response delete(@PathParam("id") long id) {
         boolean delete = productImageService.deleteProductImage(id);
         if (!delete)
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(id).build();
+            return notFoundResponse();
+        return okResponse(id);
+    }
+
+    private Response okResponse(Object entity) {
+        return Response.ok(entity).build();
+    }
+
+    private Response notFoundResponse() {
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

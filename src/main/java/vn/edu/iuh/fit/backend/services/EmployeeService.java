@@ -20,5 +20,4 @@ public class EmployeeService {
     public Optional<Employee> findEmployee(long id) {return repo.findEmployee(id);}
     public boolean deleteEmployee(long id) {return repo.deleteEmployee(id);}
     public List<Employee> getAllEmployee(){return repo.getAllEmployee();}
-    public List<Employee> getActiveEmployee(){return repo.getActiveEmployee();}
 }

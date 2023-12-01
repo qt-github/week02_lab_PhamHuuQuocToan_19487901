@@ -12,15 +12,12 @@ import java.util.List;
 public class CustomerResource {
     private final CustomerService customerService = new CustomerService();
 
-    public CustomerResource() {
-    }
-
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response insert(Customer customer) {
         customerService.insertCust(customer);
-        return Response.ok(customer).build();
+        return okResponse(customer);
     }
 
     @PUT
@@ -28,11 +25,11 @@ public class CustomerResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") long id, Customer customer) {
-        Customer cus = customerService.findCustomer(id).get();
+        Customer cus = customerService.findCustomer(id).orElse(null);
         if (cus == null)
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFoundResponse();
         customerService.updateCust(customer);
-        return Response.ok(customer).build();
+        return okResponse(customer);
     }
 
     @GET
@@ -40,10 +37,10 @@ public class CustomerResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findByID(@PathParam("id") long id) {
-        Customer customer = customerService.findCustomer(id).get();
+        Customer customer = customerService.findCustomer(id).orElse(null);
         if (customer == null)
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(customer).build();
+            return notFoundResponse();
+        return okResponse(customer);
     }
 
     @GET
@@ -52,7 +49,7 @@ public class CustomerResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll() {
         List<Customer> list = customerService.getAll();
-        return Response.ok(list).build();
+        return okResponse(list);
     }
 
     @DELETE
@@ -60,7 +57,17 @@ public class CustomerResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response delete(@PathParam("id") long id) {
-        customerService.deleteCust(id);
+        boolean delete = customerService.deleteCust(id);
+        if (!delete)
+            return Response.status(Response.Status.NOT_FOUND).build();
         return Response.ok(id).build();
+    }
+
+    private Response okResponse(Object entity) {
+        return Response.ok(entity).build();
+    }
+
+    private Response notFoundResponse() {
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Details</title>
+    <link rel="stylesheet" href="../css/details_product.css">
+</head>
+<body>
+
+<h2>Product Details</h2>
+
+<!-- Back Button -->
+<button id="backButton" onclick="goBack()">Back</button>
+
+<div id="productImages">
+    <h3>Product Images</h3>
+    <div id="imageDetails">
+        <p><strong>Image ID:</strong> <span id="image_id"></span></p>
+        <p><strong>Image</strong></p>
+        <img id="path" alt="Product Image">
+        <p><strong>Alternative:</strong> <span id="alternative"></span></p>
+    </div>
+</div>
+
+<div id="productPrices">
+    <h3>Product Prices</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Price Date</th>
+            <th>Price</th>
+            <th>Note</th>
+        </tr>
+        </thead>
+        <tbody id="priceTableBody">
+        </tbody>
+    </table>
+</div>
+
+<script src="../js/product-manager/productDetails.js"></script>
+
+</body>
+</html>

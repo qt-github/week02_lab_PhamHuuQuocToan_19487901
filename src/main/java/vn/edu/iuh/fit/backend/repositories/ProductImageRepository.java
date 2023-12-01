@@ -5,10 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.edu.iuh.fit.backend.entities.ProductImage;
 
-
-import java.util.Optional;
 import java.util.List;
-
+import java.util.Optional;
 
 public class ProductImageRepository {
     private final EntityManager em;
@@ -17,67 +15,63 @@ public class ProductImageRepository {
 
     public ProductImageRepository() {
         em = Persistence.createEntityManagerFactory("lab_week_2").createEntityManager();
-        trans=em.getTransaction();
+        trans = em.getTransaction();
     }
-    public boolean insertProductImage(ProductImage productImage){
-        try {
-            trans.commit();
-            em.persist(productImage);
-            trans.commit();
-            return true;
-        }catch (Exception e){
-            logger.info(e.getMessage());
-            trans.rollback();
-        }
-        return false;
+
+    public boolean insertProductImage(ProductImage productImage) {
+        return executeTransaction(() -> em.persist(productImage));
     }
-    public boolean updateProductImage(ProductImage productImage){
-        try {
-            trans.commit();
-            em.merge(productImage);
-            trans.commit();
-            return true;
-        }catch (Exception e){
-            logger.info(e.getMessage());
-            trans.rollback();
-        }
-        return false;
+
+    public boolean updateProductImage(ProductImage productImage) {
+        return executeTransaction(() -> em.merge(productImage));
     }
 
     public Optional<ProductImage> findProductImage(long id) {
-        TypedQuery<ProductImage> query = em.createQuery("select o from ProductImage o where o.image_id=:id", ProductImage.class);
-        query.setParameter("id", id);
-        ProductImage productImage = query.getSingleResult();
-        return productImage == null ? Optional.empty() : Optional.of(productImage);
+        return executeTransactionWithResult(() -> {
+            TypedQuery<ProductImage> query = em.createQuery("select o from ProductImage o where o.image_id=:id", ProductImage.class);
+            query.setParameter("id", id);
+            ProductImage productImage = query.getSingleResult();
+            return productImage == null ? Optional.empty() : Optional.of(productImage);
+        });
     }
 
     public boolean deleteProductImage(long id) {
-        Optional<ProductImage> op = findProductImage(id);
-        ProductImage productImage = op.isPresent() ? op.get() : null;
-        if (productImage == null) return false;
+        return executeTransaction(() -> {
+            Optional<ProductImage> op = findProductImage(id);
+            ProductImage productImage = op.orElse(null);
+            if (productImage != null) {
+                em.remove(productImage);
+            }
+        });
+    }
+
+    public List<ProductImage> getAllProductImages() {
+        return executeTransactionWithResult(() -> em.createNativeQuery("SELECT * from product_image ", ProductImage.class).getResultList());
+    }
+
+    private boolean executeTransaction(Runnable action) {
         try {
             trans.begin();
-            em.remove(productImage);
+            action.run();
             trans.commit();
             return true;
         } catch (Exception e) {
             logger.info(e.getMessage());
             trans.rollback();
+            return false;
         }
-        return false;
     }
 
-    public List<ProductImage> getAllProductImages() {
+    private <T> T executeTransactionWithResult(ResultSupplier<T> action) {
         try {
             trans.begin();
-            List<ProductImage> list = em.createNativeQuery("SELECT * from product_image ", ProductImage.class).getResultList();
+            T result = action.get();
             trans.commit();
-            return list;
+            return result;
         } catch (Exception e) {
             logger.info(e.getMessage());
             trans.rollback();
+            return null;
         }
-        return null;
     }
-
 }

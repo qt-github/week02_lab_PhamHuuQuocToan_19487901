@@ -21,8 +21,8 @@ public class CustomerService {
         repository.updateCust(customer);
     }
 
-    public void deleteCust(long id) {
-        repository.deleteCust(id);
+    public boolean deleteCust(long id) {
+        return repository.deleteCust(id);
     }
 
     public List<Customer> getAll() {

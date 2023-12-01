@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
+
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -43,6 +43,26 @@ public class Order {
         this.orderDate = orderDate;
         this.employee = employee;
         this.customer = customer;
+    }
+
+    public long getOrder_id() {
+        return order_id;
+    }
+
+    public LocalDateTime getOrderDate() {
+        return orderDate;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public List<OrderDetail> getOrderDetails() {
+        return orderDetails;
     }
 
     public void setOrder_id(long order_id) {

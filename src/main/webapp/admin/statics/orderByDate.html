@@ -3,149 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <title>Order Statistics by Date</title>
+    <link rel="stylesheet" type="text/css" href="../css/list_page.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-}
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-h1 {
-    color: #333;
-    text-align: center;
-    margin-top: 50px;
-}
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 50px;
+        }
 
-#dateForm {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    justify-content: center;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 0 10px #ddd;
-    padding: 20px;
-    background-color: white;
-    width: 50%;
-    margin: 50px auto;
-}
 
-#dateForm label {
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-align: left;
-}
+        #statsTable {
+            width: 80%;
+            margin: 50px auto;
+            border-collapse: collapse;
+        }
 
-#dateForm input {
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    width: 80%;
-}
+        #statsTable th, #statsTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
 
-#dateForm button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #333;
-    color: white;
-    cursor: pointer;
-    width: 100%;
-}
+        #statsTable tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
 
-#dateForm button:hover {
-    background-color: #333;
-}
-
-.form-control {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-#statsTable {
-    width: 80%;
-    margin: 50px auto;
-    border-collapse: collapse;
-}
-
-#statsTable th, #statsTable td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-}
-
-#statsTable tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-#statsTable th {
-    background-color: #333;
-    color: white;
-}
+        #statsTable th {
+            background-color: #333;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <h1>Order Statistics by Date</h1>
-    <form id="dateForm">
-        <div class="form-control">
-            <label for="dayPicker">Day:</label>
-            <input type="number" id="dayPicker" min="1" max="31">
-        </div>
-        <div class="form-control">
-            <label for="monthPicker">Month:</label>
-            <input type="number" id="monthPicker" min="1" max="12">
-        </div>
-        <div class="form-control">
-            <label for="yearPicker">Year:</label>
-            <input type="number" id="yearPicker" min="1900" max="2099">
-        </div>
-        <button type="button" id="getStats">Get Statistics</button>
-    </form>
-    <table id="statsTable">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Number of Orders</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+<button id="backToHome">Back to home</button>
+<h1>Order Statistics by Date</h1>
+<table id="statsTable">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Number of Orders</th>
+        <th>Total Amount</th>
+    </tr>
+    </thead>
+    <tbody id="orderStatisticsTableBody">
+    </tbody>
+</table>
 
-    <script>
-        $(document).ready(function() {
-            $('#getStats').click(function() {
-                var day = $('#dayPicker').val().padStart(2, '0');
-                var month = $('#monthPicker').val().padStart(2, '0');
-                var year = $('#yearPicker').val();
-                var date = year + '-' + month + '-' + day;
-                $.ajax({
-                    url: 'http://localhost:8080/api/orders/statistics/' + date,
-                    type: 'GET',
-                    success: function(data) {
-                        $('#statsTable tbody').empty();
-                        $.each(data, function(i, item) {
-                            var row =
-                                '<tr>' +
-                                '<td>' + item[0] + '-' + item[1] + '-' + item[2] + '</td>' +
-                                '<td>' + item[3] + '</td>' +
-                                '</tr>';
-                            $('#statsTable tbody').append(row);
-                        });
-                        $('#statsTable').show();
-                    },
-                    error: function() {
-                        alert('No data found for the selected date.');
-                    }
-                });
+<script>
+    async function fetchOrderStatisticsByDay() {
+        try {
+            const response = await fetch('http://localhost:8080/api/orders/statisticsByDay');
+            const data = await response.json();
+
+            const tableBody = document.getElementById('orderStatisticsTableBody');
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const dateCell = document.createElement('td');
+                const orderCountCell = document.createElement('td');
+                const totalAmountCell = document.createElement('td');
+
+                dateCell.textContent = new Date(item[0]).toLocaleDateString();
+                orderCountCell.textContent = item[1];
+                totalAmountCell.textContent = item[2].toFixed(2);
+
+                row.appendChild(dateCell);
+                row.appendChild(orderCountCell);
+                row.appendChild(totalAmountCell);
+
+                tableBody.appendChild(row);
             });
-        });
-    </script>
+        } catch (error) {
+            console.error('Error fetching order statistics:', error);
+        }
+    }
+
+    fetchOrderStatisticsByDay();
+</script>
 </body>
 </html>

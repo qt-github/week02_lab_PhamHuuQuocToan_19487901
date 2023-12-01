@@ -66,17 +66,14 @@
             <li><a href="employee-manager/EmployeeListing.html">List Employee</a></li>
             <li><a href="product-manager/productListing.html">List Product</a></li>
             <li><a href="order-manager/ordersListing.html">List Orders</a></li>
-            <li><a href="orderDetail-manager/orderDetailsListing.html">List OrderDetails</a></li>
-            <li><a href="product-manager/productImageListing.html">List ProductImage</a></li>
-            <li><a href="product-manager/productPriceListing.html">List ProductPrice</a></li>
         </ul>
     </li>
     <li>
         <a href="#">STATIC</a>
         <ul class="submenu">
             <li><a href="statics/orderByDate.html">Order by day</a></li>
-            <li><a href="#">Order by time period</a></li>
-            <li><a href="#">Order by sales staff over a period of time</a></li>
+            <li><a href="statics/orderByRange.html">Order by time period</a></li>
+            <li><a href="statics/orderByEmp.html">Order by sales staff over a period of time</a></li>
         </ul>
     </li>
 </ul>

@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.edu.iuh.fit.backend.entities.ProductPrice;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,92 +16,98 @@ public class ProductPriceRepository {
 
     public ProductPriceRepository() {
         em = Persistence.createEntityManagerFactory("lab_week_2").createEntityManager();
-        trans=em.getTransaction();
+        trans = em.getTransaction();
     }
 
-    public boolean insertProductPrice(ProductPrice productPrice){
-        try {
-            trans.commit();
-            em.persist(productPrice);
-            trans.commit();
-            return true;
-        }catch (Exception e){
-            logger.info(e.getMessage());
-            trans.rollback();
-        }
-        return false;
+    public boolean insertProductPrice(ProductPrice productPrice) {
+        return executeTransaction(() -> em.persist(productPrice));
     }
-    public boolean updateProductPrice(ProductPrice productPrice){
-        try {
-            trans.commit();
-            em.merge(productPrice);
-            trans.commit();
-            return true;
-        }catch (Exception e){
-            logger.info(e.getMessage());
-            trans.rollback();
-        }
-        return false;
+
+    public boolean updateProductPrice(ProductPrice productPrice) {
+        return executeTransaction(() -> em.merge(productPrice));
     }
+
+
+
+    public Optional<List<ProductPrice>> findProductPricesByProductId(Long productId) {
+    return executeTransactionWithResult(() -> {
+        TypedQuery<ProductPrice> query = em.createQuery("select o from ProductPrice o where o.product.product_id=:id", ProductPrice.class);
+        query.setParameter("id", productId);
+        List<ProductPrice> productPrices = query.getResultList();
+        return Optional.ofNullable(productPrices);
+    });
+}
 
     public Optional<ProductPrice> findProductPrice(long id, LocalDateTime dateTime) {
-        TypedQuery<ProductPrice> query = em.createQuery("select o from ProductPrice o where o.product.product_id=:id and o.price_date_time=:date", ProductPrice.class);
-        query.setParameter("id", id);
-        query.setParameter("date", dateTime);
-        ProductPrice productPrice = query.getSingleResult();
-        return productPrice == null ? Optional.empty() : Optional.of(productPrice);
+        return executeTransactionWithResult(() -> {
+            TypedQuery<ProductPrice> query = em.createQuery("select o from ProductPrice o where o.product.product_id=:id and o.price_date_time=:date", ProductPrice.class);
+            query.setParameter("id", id);
+            query.setParameter("date", dateTime);
+            ProductPrice productPrice = query.getSingleResult();
+            return productPrice == null ? Optional.empty() : Optional.of(productPrice);
+        });
     }
 
-    public boolean deleteProductPrice(long id,LocalDateTime dateTime) {
-        Optional<ProductPrice> op = findProductPrice(id, dateTime);
-        ProductPrice productPrice = op.isPresent() ? op.get() : null;
-        if (productPrice == null) return false;
+    public boolean deleteProductPrice(long id, LocalDateTime dateTime) {
+        return executeTransaction(() -> {
+            Optional<ProductPrice> op = findProductPrice(id, dateTime);
+            ProductPrice productPrice = op.orElse(null);
+            if (productPrice != null) {
+                em.remove(productPrice);
+            }
+        });
+    }
+
+    public List<ProductPrice> getAllProductPrice() {
+        return executeTransactionWithResult(() -> em.createQuery("SELECT c from ProductPrice c order by c.product.product_id ASC", ProductPrice.class).getResultList());
+    }
+
+    public Double findLatestProductPrice(long productId) {
+        return executeTransactionWithResult(() -> {
+            String jpql = "SELECT pp.price " +
+                    "FROM ProductPrice pp " +
+                    "WHERE pp.product.product_id = :productId " +
+                    "ORDER BY pp.price_date_time DESC";
+
+            TypedQuery<Double> query = em.createQuery(jpql, Double.class);
+            query.setParameter("productId", productId);
+            query.setMaxResults(1);  // Limit the result to return only one price
+
+            Double latestPrice = null;
+
+            try {
+                latestPrice = query.getSingleResult();
+            } catch (NoResultException e) {
+                // Handle when no result is found if necessary
+            }
+
+            return latestPrice;
+        });
+    }
+
+    private boolean executeTransaction(Runnable action) {
         try {
             trans.begin();
-            em.remove(productPrice);
+            action.run();
             trans.commit();
             return true;
         } catch (Exception e) {
             logger.info(e.getMessage());
             trans.rollback();
+            return false;
         }
-        return false;
     }
 
-    public List<ProductPrice> findByIdNotDate(Long id){
-        return em.createQuery("SELECT c FROM ProductPrice c WHERE c.product.product_id = :id ORDER BY c.product.product_id ASC", ProductPrice.class)
-                .setParameter("id", id)
-                .getResultList();    }
-    public List<ProductPrice> getAllProductPrice() {
+    private <T> T executeTransactionWithResult(ResultSupplier<T> action) {
         try {
             trans.begin();
-            List<ProductPrice> list = em.createQuery("SELECT c from ProductPrice c order by c.product.product_id ASC", ProductPrice.class).getResultList();
+            T result = action.get();
             trans.commit();
-            return list;
+            return result;
         } catch (Exception e) {
             logger.info(e.getMessage());
             trans.rollback();
+            return null;
         }
-        return null;
-    }
-    public Double findLatestProductPrice(long productId) {
-        String jpql = "SELECT pp.price " +
-                "FROM ProductPrice pp " +
-                "WHERE pp.product.product_id = :productId " +
-                "ORDER BY pp.price_date_time DESC";
-
-        TypedQuery<Double> query = em.createQuery(jpql, Double.class);
-        query.setParameter("productId", productId);
-        query.setMaxResults(1);  // Giới hạn kết quả chỉ trả về một giá
-
-        Double latestPrice = null;
-
-        try {
-            latestPrice = query.getSingleResult();
-        } catch (NoResultException e) {
-            // Xử lý khi không tìm thấy kết quả nếu cần
-        }
-
-        return latestPrice;
     }
 }

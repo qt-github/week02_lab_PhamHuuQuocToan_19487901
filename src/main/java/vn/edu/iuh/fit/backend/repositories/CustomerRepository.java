@@ -6,65 +6,69 @@ import jakarta.persistence.Persistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.edu.iuh.fit.backend.entities.Customer;
+import vn.edu.iuh.fit.backend.entities.Order;
 
 import java.util.List;
 
-
 public class CustomerRepository {
-        private final EntityManager em;
-        private final EntityTransaction trans;
+    private final EntityManager em;
+    private final EntityTransaction trans;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-        private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    public CustomerRepository() {
+        em = Persistence.createEntityManagerFactory("lab_week_2").createEntityManager();
+        trans = em.getTransaction();
+    }
 
     public Customer getCustomerById(long id) {
         return em.find(Customer.class, id);
     }
 
-        public CustomerRepository() {
-            em = Persistence
-                    .createEntityManagerFactory("lab_week_2")
-                    .createEntityManager();
-            trans = em.getTransaction();
-        }
+    public void insertCust(Customer customer) {
+        executeTransaction(() -> em.persist(customer));
+    }
 
-        public void insertCust(Customer customer) {
-            try {
-                trans.begin();
-                em.persist(customer);
-                trans.commit();
-            } catch (Exception ex) {
-                trans.rollback();
-                logger.error(ex.getMessage());
-            }
-        }
-
-        public List<Customer> getAllCust() {
-            return em.createQuery("select c from Customer c", Customer.class).getResultList();
-        }
+    public List<Customer> getAllCust() {
+        return em.createQuery("select c from Customer c", Customer.class).getResultList();
+    }
 
     public void updateCust(Customer customer) {
         try {
+            executeTransaction(() -> em.merge(customer));
+        } catch (Exception ex) {
+            throw new RuntimeException("Transaction failed", ex);
+        }
+    }
+
+    public boolean deleteCust(long id) {
+    Customer customer = getCustomerById(id);
+    if (customer != null) {
+        try {
+            executeTransaction(() -> {
+                // Delete or reassign all orders associated with the customer
+                for (Order order : customer.getOrderList()) {
+                    em.remove(order);
+                }
+                // Now we can safely delete the customer
+                em.remove(customer);
+            });
+            return true;
+        } catch (Exception ex) {
+            throw new RuntimeException("Transaction failed", ex);
+        }
+    }
+    return false;
+}
+
+    private void executeTransaction(Runnable action) {
+        try {
             trans.begin();
-            em.merge(customer);
+            action.run();
             trans.commit();
         } catch (Exception ex) {
             trans.rollback();
             logger.error(ex.getMessage());
-        }
-    }
-
-    public void deleteCust(long id) {
-        try {
-            trans.begin();
-            Customer customer = em.find(Customer.class, id);
-            if (customer != null) {
-                em.remove(customer);
-                trans.commit();
-            }
-        } catch (Exception ex) {
-            trans.rollback();
-            logger.error(ex.getMessage());
+            throw new RuntimeException("Transaction failed", ex);
         }
     }
 }
-

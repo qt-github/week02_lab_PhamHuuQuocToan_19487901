@@ -27,7 +27,6 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const customerId = urlParams.get('id');
-
     if (customerId) {
         document.getElementById('id').value = customerId;
         fetch(`http://localhost:8080/api/customers/${customerId}`)
@@ -42,7 +41,7 @@
                 console.error('Error fetching customer data:', error);
             });
 
-        document.getElementById('updateCustomerForm').addEventListener('submit', function (event) {
+        document.getElementById('updateForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
             const formData = new FormData(event.target);

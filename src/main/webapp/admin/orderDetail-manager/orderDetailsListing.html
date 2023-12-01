@@ -14,16 +14,17 @@
         <th>NOTE</th>
         <th>OrderID</th>
         <th>ProductId</th>
-        <th>ACTION</th>
     </tr>
     <tbody id="ordersDetails">
     </tbody>
 </table>
 
 <script>
-    async function fetchOrderDetailsData() {
+    async function fetchOrderDetailsData(orderId) {
         try {
-            const response = await fetch('http://localhost:8080/api/orderDetails/all');
+            const apiUrl = `http://localhost:8080/api/orderDetails/${Number(orderId)}`;
+            const response = await fetch(apiUrl);
+
             if (!response.ok) {
                 throw new Error('Failed to retrieve order details data');
             }
@@ -33,16 +34,12 @@
             data.forEach(ordersDetails => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                        <td>${ordersDetails.quantity}</td>
-                        <td>${ordersDetails.price}</td>
-                        <td>${ordersDetails.note}</td>
-                        <td>${ordersDetails.orderId}</td>
-                        <td>${ordersDetails.productId}</td>
-                        <td>
-                            <a href="">Update</a>
-                            <a href="">Delete</a>
-                        </td>
-                    `;
+                    <td>${ordersDetails.quantity}</td>
+                    <td>${ordersDetails.price}</td>
+                    <td>${ordersDetails.note}</td>
+                    <td>${ordersDetails.orderId}</td>
+                    <td>${ordersDetails.productId}</td>
+                `;
                 ordersDetailsList.appendChild(row);
             });
         } catch (error) {
@@ -50,16 +47,27 @@
         }
     }
 
-    // Gọi hàm để lấy dữ liệu
-    fetchOrderDetailsData();
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
 
-    document.getElementById('addButton').addEventListener('click', function() {
-    window.location.href = 'orderDetailsListing.html'; // Replace with your actual add new item page URL
-});
+    var orderId = getParameterByName('id');
 
-document.getElementById('backToHome').addEventListener('click', function() {
-    window.location.href = '../admin.jsp'; // Replace with your actual home page URL
-});
+    fetchOrderDetailsData(orderId);
+
+    document.getElementById('addButton').addEventListener('click', function () {
+        window.location.href = 'orderDetailsListing.html';
+    });
+
+    document.getElementById('backToHome').addEventListener('click', function () {
+        window.location.href = '../admin.jsp';
+    });
 </script>
 </body>
 </html>

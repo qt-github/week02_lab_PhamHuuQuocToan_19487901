@@ -5,11 +5,17 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
         }
 
         #orderForm {
             width: 300px;
             margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
 
         #orderForm label {
@@ -17,59 +23,238 @@
             margin-top: 20px;
         }
 
-        #orderForm input[type="text"] {
+        #orderForm input[type="text"],
+        #orderForm input[type="number"],
+        #orderForm input[type="datetime-local"] {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
 
-        #orderForm input[type="submit"] {
+        #orderForm button {
             margin-top: 20px;
             padding: 10px 20px;
-            background-color: #333;
+            background-color: #007BFF;
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
 
-        #orderForm input[type="submit"]:hover {
-            background-color: #111;
+        #orderForm button:hover {
+            background-color: #0056b3;
+        }
+
+        h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #cartTable {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        #cartTable th,
+        #cartTable td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        #cartTable th {
+            background-color: #007BFF;
+            color: white;
         }
     </style>
 </head>
 <body>
-<h1>Create New Order</h1>
-<form id="orderForm" method="POST">
-    <label for="order_date">Order Date:</label>
-    <input type="text" id="order_date" name="order_date" required><br>
+<h2>Create new order</h2>
 
-    <label for="emp_id">Employee ID:</label>
-    <input type="text" id="emp_id" name="emp_id" required><br>
+<form id="orderForm">
+    <label for="employeeList">Employee:</label>
+    <input type="text" id="employee" list="employeeList" data-id="">
+    <datalist id="employeeList"></datalist>
 
-    <label for= "cust_id">Customer ID:</label>
-    <input type="text" id="cust_id" name="cust_id" required><br>
+    <label for="customerList">Customer:</label>
+    <input type="text" id="customer" list="customerList" data-id="">
+    <datalist id="customerList"></datalist>
 
-    <h2>Order Details</h2>
-    <label for="product_id">Product ID:</label>
-    <input type="text" id="product_id" name="product_id" required><br>
+    <label for="productList">Product:</label>
+    <input type="text" id="product" list="productList" data-id="">
+    <datalist id="productList"></datalist>
 
     <label for="quantity">Quantity:</label>
-    <input type="text" id="quantity" name="quantity" required><br>
-
-    <label for="price">Price:</label>
-    <input type="text" id="price" name="price" required><br>
+    <input type="number" id="quantity" name="quantity" min="1" required>
 
     <label for="note">Note:</label>
-    <input type="text" id="note" name="note"><br>
+    <input type="text" id="note">
 
-    <input type="submit" value="Create Order">
+    <button type="button" onclick="addToCart()">Add to Cart</button>
 </form>
 
-<script>
-    document.getElementById('orderForm').addEventListener('submit', function () {
+<h3>Shopping Cart</h3>
+<table id="cartTable">
+    <thead>
+    <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody id="cartBody"></tbody>
+</table>
 
-       console.log("add");
+<button type="button" onclick="submitOrder()">Submit Order</button>
+
+<script>
+    let cart = [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeForm();
     });
+
+    function initializeForm() {
+        fetchAndPopulateData('http://localhost:8080/api/customers/all', 'customerList', 'id', 'name');
+        fetchAndPopulateData('http://localhost:8080/api/employee/all', 'employeeList', 'id', 'fullname');
+        fetchAndPopulateData('http://localhost:8080/api/products/active', 'productList', 'productId', 'name');
+    }
+
+    function fetchAndPopulateData(url, elementId, valueProperty, textProperty) {
+        fetch(url)
+            .then(response => response.json())
+            .then(data => populateDatalist(data, elementId, valueProperty, textProperty))
+            .catch(error => console.error('Error fetching data:', error));
+    }
+
+    function populateDatalist(data, elementId, valueProperty, textProperty) {
+        const datalist = document.getElementById(elementId);
+
+        data.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item[textProperty];
+            option.setAttribute('data-id', item[valueProperty]);
+            datalist.appendChild(option);
+        });
+    }
+
+    function addToCart() {
+        const employeeId = document.getElementById('employee').value;
+        const customerId = document.getElementById('customer').value;
+        const productId = document.getElementById('product').value;
+        const quantity = document.getElementById('quantity').value;
+        const note = document.getElementById('note').value;
+
+        if (!productId) {
+            alert('Please select a product before adding to the cart.');
+            return;
+        }
+
+        const name = document.getElementById('product').value; // Get the product name directly from the input field
+
+        const selectedEmployee = document.querySelector(`#employeeList option[value="${employeeId}"]`);
+        const selectedCustomer = document.querySelector(`#customerList option[value="${customerId}"]`);
+        const selectedProduct = document.querySelector(`#productList option[value="${productId}"]`);
+
+        const enoId = selectedEmployee ? selectedEmployee.getAttribute('data-id') : null;
+        const cusId = selectedCustomer ? selectedCustomer.getAttribute('data-id') : null;
+        const proId = selectedProduct ? selectedProduct.getAttribute('data-id') : null;
+
+        fetch(`http://localhost:8080/api/productPrices/last/${proId}`)
+            .then(response => response.json())
+            .then(priceData => {
+                const item = {
+                    cusId: cusId,
+                    orderDate: new Date().toISOString(),
+                    enoId: enoId,
+                    note: note,
+                    price: priceData,
+                    productId: proId,
+                    quantity: quantity,
+                    name: name
+                };
+
+                cart.push(item);
+                updateCartTable();
+                clearForm();
+            })
+            .catch(error => {
+                console.error('Error fetching product price:', error);
+                alert('An error occurred while fetching the product price. Please try again.');
+            });
+    }
+
+
+    function updateCartTable() {
+        const cartBody = document.getElementById('cartBody');
+        cartBody.innerHTML = '';
+
+        cart.forEach(item => {
+            const row = cartBody.insertRow();
+            row.insertCell(0).innerText = item.name;
+            row.insertCell(1).innerText = item.quantity;
+            const deleteButton = document.createElement('button');
+            deleteButton.innerText = 'Remove';
+            deleteButton.addEventListener('click', () => removeFromCart(item.productId));
+            row.insertCell(2).appendChild(deleteButton);
+        });
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.productId !== productId);
+        updateCartTable();
+    }
+
+    function submitOrder() {
+        if (cart.length === 0) {
+            alert('Your cart is empty. Add items before submitting.');
+            return;
+        }
+
+        const apiUrl = 'http://localhost:8080/api/orders';
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(cart),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    return null;
+                }
+            })
+            .then(data => {
+                alert('Order submitted successfully');
+                cart = [];
+                updateCartTable();
+                clearForm();
+            })
+            .catch(error => {
+                console.error('Error submitting order:', error.message);
+                alert('An error occurred while submitting the order. Please try again.');
+            });
+    }
+
+    function clearForm() {
+        document.getElementById('employee').value = '';
+        document.getElementById('customer').value = '';
+        document.getElementById('product').value = '';
+        document.getElementById('quantity').value = '';
+        document.getElementById('note').value = '';
+    }
 </script>
 </body>
 </html>

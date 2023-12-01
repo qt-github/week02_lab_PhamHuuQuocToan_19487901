@@ -23,13 +23,16 @@
 </table>
 
 <script>
+    /**
+     * Fetches employee data from the server and populates the employee list table.
+     * @async
+     */
     async function fetchEmployeeData() {
         try {
             const response = await fetch('http://localhost:8080/api/employee/all');
             if (!response.ok) {
                 throw new Error('Failed to retrieve employee data');
             }
-
             const data = await response.json();
             const employeeList = document.getElementById('employeeList');
             data.forEach(employee => {
@@ -39,6 +42,9 @@
                         <td>${employee.fullname}</td>
                         <td>${employee.dob}</td>
                         <td>${employee.phone}</td>
+                        <td>${employee.email}</td>
+                        <td>${employee.address}</td>
+                        <td>${employee.status}</td>
 
                         <td>
                             <a href="updateEmp.html?id=${employee.id}">Update</a>
@@ -52,16 +58,23 @@
         }
     }
 
-    // Gọi hàm để lấy dữ liệu
+    // Fetch employee data when the page loads
     fetchEmployeeData();
 
+    // Event listener for the "Add Employee" button
     document.getElementById('addButton').addEventListener('click', function() {
         window.location.href = 'addEmp.html';
     });
+
+    // Event listener for the "Back to home" button
     document.getElementById('backToHome').addEventListener('click', function() {
         window.location.href = '../admin.jsp';
     });
 
+    /**
+     * Deletes an employee from the server and reloads the page.
+     * @param {number} empId - The ID of the employee to delete.
+     */
     const deleteEmp = (empId) => {
         const confirmDelete = confirm("Are you sure you want to delete this customer?");
 

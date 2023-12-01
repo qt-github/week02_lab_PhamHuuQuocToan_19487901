@@ -7,7 +7,7 @@ import lombok.Getter;
 import vn.edu.iuh.fit.backend.pks.OrderDetailPK;
 
 
-@Getter
+
 @Entity
 @Table(name = "order_detail")
 @IdClass(OrderDetailPK.class)
@@ -53,6 +53,34 @@ public class OrderDetail {
         this.product = product;
         this.productId = productId;
         this.orderId = orderId;
+    }
+
+    public double getQuantity() {
+        return quantity;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public Long getOrderId() {
+        return orderId;
     }
 
     public void setProductId(Long productId) {

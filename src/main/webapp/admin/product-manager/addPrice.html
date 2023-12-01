@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../css/add_form.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Price</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        padding: 20px;
+    }
+
+    h2 {
+        color: #333;
+        text-align: center;
+    }
+
+    #addPriceForm {
+        width: 300px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #addPriceForm label {
+        display: block;
+        margin-top: 20px;
+    }
+
+    #addPriceForm input[type="number"],
+    #addPriceForm input[type="text"],
+    #addPriceForm input[type="datetime-local"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    #addPriceForm button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    #addPriceForm button:hover {
+        background-color: #0056b3;
+    }
+</style>
+</head>
+<body>
+<h2>Add Price</h2>
+<form id="addPriceForm">
+
+    <label for="price">Price:</label>
+    <input type="number" id="price" name="price" required>
+
+    <label for="note">Note:</label>
+    <input type="text" id="note" name="note">
+
+    <label for="price_date_time">Price Date:</label>
+    <input type="datetime-local" id="price_date_time" name="price_date_time" required>
+
+    <button type="button" onclick="addPrice()">Add Price</button>
+</form>
+
+<script src="../js/product-manager/addPrice.js"></script>
+
+</body>
+</html>

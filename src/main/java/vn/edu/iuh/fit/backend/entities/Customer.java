@@ -1,11 +1,10 @@
 package vn.edu.iuh.fit.backend.entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.Builder;
 
 import java.util.List;
 
-@Getter
 @Entity
 @Table(name = "customer")
 @NamedQueries({
@@ -37,6 +36,30 @@ public class Customer {
         this.email = email;
         this.phone = phone;
         this.address = address;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public List<Order> getOrderList() {
+        return orderList;
     }
 
     public void setId(long id) {

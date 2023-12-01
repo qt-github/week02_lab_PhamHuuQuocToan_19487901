@@ -6,7 +6,6 @@ import jakarta.ws.rs.core.Response;
 import vn.edu.iuh.fit.backend.entities.ProductPrice;
 import vn.edu.iuh.fit.backend.services.ProductPriceService;
 
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -16,47 +15,39 @@ public class ProductPriceResource {
     private final ProductPriceService productPriceService = new ProductPriceService();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-    public ProductPriceResource() {
-    }
-
     @GET
     @Path("/all")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll() {
         List<ProductPrice> list = productPriceService.getAllProductPrice();
-        return Response.ok(list).build();
+        return okResponse(list);
     }
+
     @GET
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findByIDNotDate(@PathParam("id") long id) {
-        if (productPriceService.findByIdNotDate(id).isEmpty())
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(productPriceService.findByIdNotDate(id)).build();
+    public Response findProductPricesByProductId(@PathParam("id") long id) {
+        return productPriceService.findProductPricesByProductId(id).map(this::okResponse).orElseGet(this::notFoundResponse);
     }
+
     @GET
     @Path("/last/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response findLatestProductPrice(@PathParam("id") long id) {
-        // Kiểm tra xem giá sản phẩm có ngày gần nhất tồn tại hay không
         Double latestPrice = productPriceService.findLatestProductPrice(id);
-        if (latestPrice == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        // Trả về giá sản phẩm có ngày gần nhất
-        return Response.ok(latestPrice).build();
+        return latestPrice != null ? okResponse(latestPrice) : notFoundResponse();
     }
+
     @GET
     @Path("/{id}/{date}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findByID(@PathParam("id") long id, @PathParam("date") String date) {
         LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
-        if (productPriceService.findProductPrice(id, dateTime).isEmpty())
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(productPriceService.findProductPrice(id, dateTime).get()).build();
+        return productPriceService.findProductPrice(id, dateTime).map(this::okResponse).orElseGet(this::notFoundResponse);
     }
 
     @POST
@@ -64,7 +55,7 @@ public class ProductPriceResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response insert(ProductPrice productPrice) {
         productPriceService.insertProductPrice(productPrice);
-        return Response.ok(productPrice).build();
+        return okResponse(productPrice);
     }
 
     @PUT
@@ -74,11 +65,9 @@ public class ProductPriceResource {
     public Response update(@PathParam("id") long id, @PathParam("date") String date, ProductPrice productPrice) {
         LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
         if (productPriceService.findProductPrice(id, dateTime).isEmpty())
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFoundResponse();
         boolean update = productPriceService.updateProductPrice(productPrice);
-        if (!update)
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(productPrice).build();
+        return update ? okResponse(productPrice) : notFoundResponse();
     }
 
     @DELETE
@@ -88,8 +77,14 @@ public class ProductPriceResource {
     public Response delete(@PathParam("id") long id, @PathParam("date") String date) {
         LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
         boolean delete = productPriceService.deleteProductPrice(id, dateTime);
-        if (!delete)
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(id).build();
+        return delete ? okResponse(id) : notFoundResponse();
+    }
+
+    private Response okResponse(Object entity) {
+        return Response.ok(entity).build();
+    }
+
+    private Response notFoundResponse() {
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

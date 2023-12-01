@@ -1,14 +1,13 @@
 package vn.edu.iuh.fit.backend.resources;
 
-
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import vn.edu.iuh.fit.backend.entities.Employee;
 import vn.edu.iuh.fit.backend.services.EmployeeService;
 
-
 import java.util.List;
+import java.util.Optional;
 
 @Path("/employee")
 public class EmployeeResource {
@@ -22,51 +21,65 @@ public class EmployeeResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response insert(Employee employee) {
         employeeService.insertEmployee(employee);
-        return Response.ok(employee).build();
+        return okResponse(employee);
     }
 
-    //    @PUT
-//    @Path("/{id}")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response update(@PathParam("id") long id, Customer customer) {
-//        Customer cus = customerService.finCustomer(id).get();
-//        if (cus == null)
-//            return Response.status(Response.Status.NOT_FOUND).build();
-//        boolean update = customerService.updateCustomer(customer);
-//        if (!update)
-//            return Response.status(Response.Status.NOT_FOUND).build();
-//        return Response.ok(customer).build();
-//    }
-//
-//    @GET
-//    @Path("/{id}")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response findByID(@PathParam("id") long id) {
-//        Customer customer = customerService.finCustomer(id).get();
-//        if (customer == null)
-//            return Response.status(Response.Status.NOT_FOUND).build();
-//        return Response.ok(customer).build();
-//    }
-//
+    @PUT
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response update(@PathParam("id") long id, Employee employee) {
+        Optional<Employee> emp = employeeService.findEmployee(id);
+        if (emp.isEmpty()) {
+            return notFoundResponse();
+        }
+        boolean update = employeeService.updateEmployee(employee);
+        if (!update) {
+            return notFoundResponse();
+        }
+        return okResponse(employee);
+    }
+
+    @GET
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findByID(@PathParam("id") long id) {
+        Optional<Employee> optionalEmployee = employeeService.findEmployee(id);
+
+        if (optionalEmployee.isPresent()) {
+            Employee employee = optionalEmployee.get();
+            return okResponse(employee);
+        } else {
+            return notFoundResponse();
+        }
+    }
+
     @GET
     @Path("/all")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll() {
         List<Employee> list = employeeService.getAllEmployee();
-        return Response.ok(list).build();
+        return okResponse(list);
     }
-//
-//    @DELETE
-//    @Path("/{id}")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response delete(@PathParam("id") long id) {
-//        boolean delete = customerService.deleteCustomer(id);
-//        if (!delete)
-//            return Response.status(Response.Status.NOT_FOUND).build();
-//        return Response.ok(id).build();
-//    }
+
+    @DELETE
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(@PathParam("id") long id) {
+        boolean delete = employeeService.deleteEmployee(id);
+        if (!delete)
+            return notFoundResponse();
+        return okResponse(id);
+    }
+
+    private Response okResponse(Object entity) {
+        return Response.ok(entity).build();
+    }
+
+    private Response notFoundResponse() {
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
 }
